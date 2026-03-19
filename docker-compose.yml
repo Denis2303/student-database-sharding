@@ -1,0 +1,119 @@
+version: '3.8'
+
+services:
+  # Config Server (3 узла для репликации)
+  configsvr1:
+    image: mongo:6.0
+    command: mongod --configsvr --replSet configReplSet --port 27017 --bind_ip_all
+    ports:
+      - "27019:27017"
+    volumes:
+      - ./data/config1:/data/db
+    networks:
+      - shard-network
+
+  configsvr2:
+    image: mongo:6.0
+    command: mongod --configsvr --replSet configReplSet --port 27017 --bind_ip_all
+    ports:
+      - "27020:27017"
+    volumes:
+      - ./data/config2:/data/db
+    networks:
+      - shard-network
+
+  configsvr3:
+    image: mongo:6.0
+    command: mongod --configsvr --replSet configReplSet --port 27017 --bind_ip_all
+    ports:
+      - "27021:27017"
+    volumes:
+      - ./data/config3:/data/db
+    networks:
+      - shard-network
+
+  # Shard 1 (с репликацией)
+  shard1-1:
+    image: mongo:6.0
+    command: mongod --shardsvr --replSet shard1ReplSet --port 27017 --bind_ip_all
+    ports:
+      - "27022:27017"
+    volumes:
+      - ./data/shard1-1:/data/db
+    networks:
+      - shard-network
+
+  shard1-2:
+    image: mongo:6.0
+    command: mongod --shardsvr --replSet shard1ReplSet --port 27017 --bind_ip_all
+    ports:
+      - "27023:27017"
+    volumes:
+      - ./data/shard1-2:/data/db
+    networks:
+      - shard-network
+
+  # Shard 2 (с репликацией)
+  shard2-1:
+    image: mongo:6.0
+    command: mongod --shardsvr --replSet shard2ReplSet --port 27017 --bind_ip_all
+    ports:
+      - "27024:27017"
+    volumes:
+      - ./data/shard2-1:/data/db
+    networks:
+      - shard-network
+
+  shard2-2:
+    image: mongo:6.0
+    command: mongod --shardsvr --replSet shard2ReplSet --port 27017 --bind_ip_all
+    ports:
+      - "27025:27017"
+    volumes:
+      - ./data/shard2-2:/data/db
+    networks:
+      - shard-network
+
+  # Shard 3 (с репликацией)
+  shard3-1:
+    image: mongo:6.0
+    command: mongod --shardsvr --replSet shard3ReplSet --port 27017 --bind_ip_all
+    ports:
+      - "27026:27017"
+    volumes:
+      - ./data/shard3-1:/data/db
+    networks:
+      - shard-network
+
+  shard3-2:
+    image: mongo:6.0
+    command: mongod --shardsvr --replSet shard3ReplSet --port 27017 --bind_ip_all
+    ports:
+      - "27027:27017"
+    volumes:
+      - ./data/shard3-2:/data/db
+    networks:
+      - shard-network
+
+  # Mongos Router
+  mongos:
+    image: mongo:6.0
+    command: mongos --configdb configReplSet/configsvr1:27017,configsvr2:27017,configsvr3:27017 --bind_ip_all --port 27017
+    ports:
+      - "27017:27017"
+    depends_on:
+      - configsvr1
+      - configsvr2
+      - configsvr3
+      - shard1-1
+      - shard1-2
+      - shard2-1
+      - shard2-2
+      - shard3-1
+      - shard3-2
+    networks:
+      - shard-network
+
+networks:
+  shard-network:
+    driver: bridge
