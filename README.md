@@ -32,3 +32,10 @@
 
 Консольное приложение с CRUD операциями
 
+## Запуск проекта
+```bash
+docker-compose up -d
+pip install -r requirements.txt
+python setup_sharding.py
+python generate_data.py
+python student_app.py
